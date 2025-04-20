@@ -1,12 +1,15 @@
 export default async function handler(req, res) {
-  if (req.method !== "POST") {
-    return res.status(405).json({ error: "Alleen POST requests zijn toegestaan." });
+  if (req.method !== 'POST') {
+    return res.status(405).json({ error: 'Alleen POST requests zijn toegestaan.' });
   }
 
-  try {
-    const { description, style, language } = req.body;
+  const { description, style, language } = req.body;
 
-    const prompt = `
+  if (!process.env.OPENAI_API_KEY) {
+    return res.status(500).json({ error: 'OpenAI API key ontbreekt.' });
+  }
+
+  const prompt = `
 Je bent een creatieve merkstrateeg. Genereer 10 unieke bedrijfsnamen op basis van de volgende input:
 
 Beschrijving: ${description}
@@ -15,8 +18,9 @@ Taal: ${language}
 
 Voor elke naam, geef een korte toelichting waarom het een goede naam is.
 Gebruik geen bestaande bedrijfsnamen of merknamen.
-    `;
+  `;
 
+  try {
     const response = await fetch("https://api.openai.com/v1/chat/completions", {
       method: "POST",
       headers: {
@@ -32,8 +36,6 @@ Gebruik geen bestaande bedrijfsnamen of merknamen.
     });
 
     const data = await response.json();
-    console.log("OpenAI response:", data);
-
     const text = data.choices?.[0]?.message?.content;
 
     if (!text) {
@@ -42,10 +44,11 @@ Gebruik geen bestaande bedrijfsnamen of merknamen.
 
     res.status(200).json({ result: text });
   } catch (error) {
-    console.error("Error:", error);
+    console.error("Naamgeneratie fout:", error);
     res.status(500).json({ error: "Er ging iets mis met de naamgeneratie." });
   }
 }
+
 
 
 
