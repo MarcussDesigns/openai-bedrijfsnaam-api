@@ -34,7 +34,9 @@ Gebruik geen bestaande bedrijfsnamen of merknamen.
     res.status(200).json({ result: text });
   } catch (error) {
     console.error("Error:", error);
-    res.status(500).json({ error: "Er ging iets mis met de naamgeneratie." });
-  }
+if (error.response) {
+  const errorDetails = await error.response.text?.();
+  console.error("OpenAI error response:", errorDetails);
 }
+
 
