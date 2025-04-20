@@ -1,7 +1,9 @@
 export default async function handler(req, res) {
-  const { description, style, language } = req.body;
+  try {
+    const body = await req.json?.() || req.body;
+    const { description, style, language } = body;
 
-  const prompt = `
+    const prompt = `
 Je bent een creatieve merkstrateeg. Genereer 10 unieke bedrijfsnamen op basis van de volgende input:
 
 Beschrijving: ${description}
@@ -10,9 +12,8 @@ Taal: ${language}
 
 Voor elke naam, geef een korte toelichting waarom het een goede naam is.
 Gebruik geen bestaande bedrijfsnamen of merknamen.
-  `;
+    `;
 
-  try {
     const response = await fetch("https://api.openai.com/v1/chat/completions", {
       method: "POST",
       headers: {
@@ -36,3 +37,4 @@ Gebruik geen bestaande bedrijfsnamen of merknamen.
     res.status(500).json({ error: "Er ging iets mis met de naamgeneratie." });
   }
 }
+
