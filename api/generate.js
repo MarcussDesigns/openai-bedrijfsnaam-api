@@ -1,13 +1,9 @@
 export default async function handler(req, res) {
-  if (req.method !== 'POST') {
-    return res.status(405).json({ error: 'Alleen POST requests zijn toegestaan.' });
+  if (req.method !== "POST") {
+    return res.status(405).json({ error: "Alleen POST requests zijn toegestaan." });
   }
 
   const { description, style, language } = req.body;
-
-  if (!process.env.OPENAI_API_KEY) {
-    return res.status(500).json({ error: 'OpenAI API key ontbreekt.' });
-  }
 
   const prompt = `
 Je bent een creatieve merkstrateeg. Genereer 10 unieke bedrijfsnamen op basis van de volgende input:
@@ -36,18 +32,26 @@ Gebruik geen bestaande bedrijfsnamen of merknamen.
     });
 
     const data = await response.json();
+
+    // Debug logs voor jou in Vercel Runtime Logs
+    console.log("OpenAI API Status:", response.status);
+    console.log("OpenAI API Response:", data);
+
     const text = data.choices?.[0]?.message?.content;
 
     if (!text) {
+      console.error("❌ Geen output van OpenAI ontvangen:", data);
       return res.status(200).json({ result: "⚠️ Geen namen gegenereerd." });
     }
 
     res.status(200).json({ result: text });
+
   } catch (error) {
-    console.error("Naamgeneratie fout:", error);
+    console.error("❌ Serverfout bij naamgeneratie:", error);
     res.status(500).json({ error: "Er ging iets mis met de naamgeneratie." });
   }
 }
+
 
 
 
