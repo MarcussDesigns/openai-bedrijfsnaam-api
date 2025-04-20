@@ -1,7 +1,20 @@
+export const config = {
+  api: {
+    bodyParser: true,
+  },
+};
+
 export default async function handler(req, res) {
+  if (req.method !== 'POST') {
+    return res.status(405).json({ error: 'Alleen POST requests zijn toegestaan.' });
+  }
+
   try {
-    const body = await req.json?.() || req.body;
-    const { description, style, language } = body;
+    const { description, style, language } = req.body;
+
+    if (!description || !style || !language) {
+      return res.status(400).json({ error: 'Ontbrekende invoervelden.' });
+    }
 
     const prompt = `
 Je bent een creatieve merkstrateeg. Genereer 10 unieke bedrijfsnamen op basis van de volgende input:
@@ -31,12 +44,12 @@ Gebruik geen bestaande bedrijfsnamen of merknamen.
     const data = await response.json();
     const text = data.choices?.[0]?.message?.content;
 
-    res.status(200).json({ result: text });
+    return res.status(200).json({ result: text });
   } catch (error) {
-    console.error("Error:", error);
-if (error.response) {
-  const errorDetails = await error.response.text?.();
-  console.error("OpenAI error response:", errorDetails);
+    console.error("Server error:", error);
+    return res.status(500).json({ error: "Er ging iets mis met de naamgeneratie." });
+  }
 }
+
 
 
